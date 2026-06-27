@@ -1,0 +1,365 @@
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.firefox.options import Options
+from selenium.common.exceptions import UnexpectedAlertPresentException, NoAlertPresentException
+import time
+import os
+
+class TorInstagramBot:
+    def __init__(self, instagram_links):
+        self.instagram_links = instagram_links
+        self.driver = None
+        
+    def dismiss_all_alerts(self):
+        """Fecha TODOS os alerts"""
+        for _ in range(10):
+            try:
+                alert = self.driver.switch_to.alert
+                alert.dismiss()
+                print("✅ Alert fechado")
+                time.sleep(1)
+            except NoAlertPresentException:
+                break
+            except:
+                break
+    
+    def start_tor_browser(self):
+        """🔥 ABRE TOR BROWSER NOVO"""
+        tor_path = r"C:\Users\SAMSUNG\Desktop\Tor Browser\Browser\firefox.exe"
+        
+        if not os.path.exists(tor_path):
+            print(f"❌ Tor não encontrado: {tor_path}")
+            return False
+        
+        print("🚀 ABRINDO TOR BROWSER NOVO...")
+        options = Options()
+        options.binary_location = tor_path
+        
+        # Configurações TOR
+        options.set_preference("network.proxy.type", 1)
+        options.set_preference("network.proxy.socks", "127.0.0.1")
+        options.set_preference("network.proxy.socks_port", 9050)
+        options.set_preference("network.proxy.socks_remote_dns", True)
+        options.set_preference("network.proxy.socks_version", 5)
+        
+        self.driver = webdriver.Firefox(options=options)
+        self.driver.maximize_window()
+        time.sleep(8)
+        print("✅ Tor aberto!")
+        return True
+    
+    def connect_tor(self):
+        """1️⃣ Clica CONECTAR"""
+        print("🔌 CLICANDO CONECTAR...")
+        self.dismiss_all_alerts()
+        
+        try:
+            connect_selectors = [
+                "//button[contains(text(),'Connect')]",
+                "//*[contains(text(),'Connect')]",
+                "//button[contains(@class,'primary')]",
+                "//button[@id='connect']"
+            ]
+            
+            for selector in connect_selectors:
+                try:
+                    btn = WebDriverWait(self.driver, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, selector))
+                    )
+                    btn.click()
+                    print("✅ CONECTAR CLICADO!")
+                    time.sleep(8)
+                    return True
+                except:
+                    continue
+            
+            print("⚠️ Nenhum botão Connect - continuando...")
+            return True
+        except:
+            print("⚠️ Connect pulado")
+            return True
+    
+    def go_to_leofame(self):
+        """2️⃣ Vai para Leofame"""
+        print("🌐 INDO PARA LEOFAME...")
+        self.driver.get("https://leofame.com/pr/free-instagram-views")
+        time.sleep(10)
+        self.dismiss_all_alerts()
+        print("✅ Leofame carregado!")
+    
+    def process_single_link(self, ig_link):
+        """🔥 PROCESSA 1 LINK COMPLETO"""
+        print(f"\n📎 LINK: {ig_link}")
+        
+        # 1. Campo Instagram
+        campo_selectors = [
+            "//input[contains(@placeholder,'Link do Post do Instagram')]",
+            "//input[contains(@placeholder,'Link do Post')]",
+            "//input[contains(@placeholder,'Instagram')]",
+            "//textarea[contains(@placeholder,'Link')]",
+            "//input[contains(@name,'link')]"
+        ]
+        
+        campo = None
+        for selector in campo_selectors:
+            try:
+                campo = WebDriverWait(self.driver, 10).until(
+                    EC.presence_of_element_located((By.XPATH, selector))
+                )
+                campo.clear()
+                campo.send_keys(ig_link)
+                print("✅ LINK COLADO!")
+                time.sleep(3)
+                break
+            except:
+                continue
+        
+        if not campo:
+            print("❌ Campo não encontrado!")
+            return False
+        
+        # 2. Botão Leofame
+        print("🖱️ CLICANDO BOTÃO...")
+        button_selectors = [
+            "//button[contains(text(),'Obter visualizações gratuita')]",
+            "//button[contains(text(),'Obter visualizações')]",
+            "//button[contains(text(),'visualizações gratuita')]",
+            "//*[contains(text(),'Obter visualizações gratuita')]",
+            "//button[contains(text(),'Get free story views')]",
+            "//button[contains(text(),'Get free')]",
+        ]
+        
+        botao = None
+        for selector in button_selectors:
+            try:
+                botao = WebDriverWait(self.driver, 8).until(
+                    EC.element_to_be_clickable((By.XPATH, selector))
+                )
+                print(f"✅ BOTÃO ENCONTRADO!")
+                self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", botao)
+                time.sleep(2)
+                self.driver.execute_script("arguments[0].click();", botao)
+                print("✅ BOTÃO CLICADO!")
+                break
+            except:
+                continue
+        
+        # 🔥 3. ESPERA 70 SEGUNDOS (CORRIGIDO!)
+        print("⏳ ESPERANDO 70 SEGUNDOS...")
+        time.sleep(70)  # ✅ 70 SEGUNDOS EXATOS
+        print("✅ 70 SEGUNDOS CONCLUÍDOS!")
+        return True
+    
+    def close_browser(self):
+        """🔒 FECHA NAVEGADOR COMPLETO"""
+        print("🔒 FECHANDO NAVEGADOR...")
+        if self.driver:
+            self.driver.quit()
+            self.driver = None
+        time.sleep(5)
+        print("✅ Navegador fechado!")
+    
+    def run(self):
+        """🔥 PROCESSA TODOS LINKS - 1 por 1 com TOR NOVO"""
+        print("🤖 TOR INSTAGRAM BOT - 1 LINK = 1 TOR")
+        print("=" * 60)
+        
+        for i, link in enumerate(self.instagram_links):
+            print(f"\n🔥 LINK {i+1}/{len(self.instagram_links)}")
+            print(f"📎 {link}")
+            print("=" * 60)
+            
+            # 🔥 TOR NOVO para cada link
+            if not self.start_tor_browser():
+                continue
+            
+            try:
+                self.connect_tor()
+                self.go_to_leofame()
+                self.process_single_link(link)
+            finally:
+                # 🔒 SEMPRE fecha após 70s
+                self.close_browser()
+            
+            print(f"✅ LINK {i+1} FINALIZADO!\n")
+        
+        print("\n🎉 🎉 TODOS LINKS CONCLUÍDOS! 🎉 🎉")
+        input("\n⏹️ Enter para fechar...")
+
+# SEUS LINKS
+INSTAGRAM_LINKS = [
+
+   "https://www.instagram.com/reel/DVeKefCkfq7/?igsh=bjR0NzRrMnR5Y29q",
+
+    "https://www.instagram.com/reel/DTlh-U9DtBi/",
+    "https://www.instagram.com/p/DZ5zlimBLdB/",
+    "https://www.instagram.com/reel/DTlh-U9DtBi/",
+    "https://www.instagram.com/reel/DZxHRQ0xd5z/",
+    "https://www.instagram.com/reel/DZaAGO4RMQf/",
+    "https://www.instagram.com/reel/DZZ2f4hx6Lh/",
+    "https://www.instagram.com/reel/DZUxf6jRpnb/",
+    "https://www.instagram.com/reel/DZHxi1Jxc6g/",
+    "https://www.instagram.com/reel/DYkHEZWREFn/",
+    "https://www.instagram.com/reel/DYhLwvExeU0/",
+    "https://www.instagram.com/reel/DX9Hezix-O1/",
+    "https://www.instagram.com/reel/DXwu63PpOHK/",
+    "https://www.instagram.com/reel/DXwRqdlTjXO/",
+    "https://www.instagram.com/reel/DXgyWMlzbt8/",
+    "https://www.instagram.com/reel/DXeMOoxT2S9/",
+    "https://www.instagram.com/reel/DXMLk1mzZrM/",
+    "https://www.instagram.com/reel/DW3mdwyxNja/",
+    "https://www.instagram.com/reel/DW1RrPfx1_x/",
+    "https://www.instagram.com/reel/DXHM7XzxpVg/",
+    "https://www.instagram.com/reel/C8UsbWEO3se/",
+    "https://www.instagram.com/reel/C0LJDa8NDwQ/",
+    "https://www.instagram.com/reel/CtwVjouRfqd/",
+    "https://www.instagram.com/reel/DY95MYRR79u/",
+    "https://www.instagram.com/reel/DXg0GJFDu66/",
+    "https://www.instagram.com/reel/DXPDvqujYVl/",
+    "https://www.instagram.com/reel/DXJpHRjjlrg/",
+    "https://www.instagram.com/reel/DXHh6eUDTp7/",
+    "https://www.instagram.com/reel/DWq1VPkDoHD/",
+    "https://www.instagram.com/reel/DWllsd5jvHe/",
+    "https://www.instagram.com/reel/DWYtIByjt-e/",
+    "https://www.instagram.com/reel/DWOfZh-jurt/",
+    "https://www.instagram.com/reel/DWBhhhFjc7L/",
+    "https://www.instagram.com/reel/DV0uAAMjcxk/",
+    "https://www.instagram.com/reel/DUiTg9MjdGF/",
+    "https://www.instagram.com/reel/DUVYw3_jho3/",
+    "https://www.instagram.com/reel/DUQ22c3jt2b/",
+    "https://www.instagram.com/reel/DSUmahPDs9O/",
+    "https://www.instagram.com/reel/DSFKFFMDmcq/",
+    "https://www.instagram.com/reel/DRuHndXDe8B/",
+    "https://www.instagram.com/reel/DRcwky3gTXW/",
+    "https://www.instagram.com/reel/DQ6-9YqDQcm/",
+    "https://www.instagram.com/reel/DQyvKjvjoGe/",
+    "https://www.instagram.com/reel/DQtl6PSjtfQ/",
+    "https://www.instagram.com/reel/DQrk6-ljbL7/",
+    "https://www.instagram.com/reel/DQm2r82AfYR/",
+    "https://www.instagram.com/reel/DI6tSK3OlMt/",
+    "https://www.instagram.com/reel/DI4ZX1dRPrW/",
+    "https://www.instagram.com/reel/DIwdTnZuySn/",
+    "https://www.instagram.com/reel/DIuEm7tRe3L/",
+    "https://www.instagram.com/reel/DIrj_xcy4bN/",
+    "https://www.instagram.com/reel/DIlvQeAOG55/",
+    "https://www.instagram.com/reel/DIjqw-9OF9I/",
+    "https://www.instagram.com/reel/DIg0yKAt3V8/",
+    "https://www.instagram.com/reel/DIeP96mukK9/",
+    "https://www.instagram.com/reel/DIce07qMwzt/",
+    "https://www.instagram.com/reel/DIY8W49uFrS/",
+    "https://www.instagram.com/reel/DIWu_QeubzL/",
+    "https://www.instagram.com/reel/DIRIQM1ugZY/",
+    "https://www.instagram.com/reel/DIM6DfsOQVq/",
+    "https://www.instagram.com/reel/DIJryu_OP16/",
+    "https://www.instagram.com/reel/DTIKhqjjvpr/",
+    "https://www.instagram.com/reel/DIHKLB5OShk/",
+    "https://www.instagram.com/reel/DIGu4tOOnw3/",
+    "https://www.instagram.com/reel/DIEi-NIOeSh/",
+    "https://www.instagram.com/reel/DICJfOlO_Of/",
+    "https://www.instagram.com/reel/DH_tsC9RR68/",
+    "https://www.instagram.com/reel/DH_Z9aeujBr/",
+    "https://www.instagram.com/reel/DH8hfw_OKdB/",
+    "https://www.instagram.com/reel/DH6SmkNuuxK/",
+    "https://www.instagram.com/reel/DHvlqbtOfRb/",
+    "https://www.instagram.com/reel/DHq7oG6u1O4/",
+    "https://www.instagram.com/reel/DHlUNBEuRUS/",
+    "https://www.instagram.com/reel/DHet71Psv_G/",
+    "https://www.instagram.com/reel/DSUm9f5jvqC/",
+    "https://www.instagram.com/reel/DRhP3u7jgrE/",
+    "https://www.instagram.com/reel/DQ5ALguDnue/",
+    "https://www.instagram.com/reel/DQM8pynjhRy/",
+    "https://www.instagram.com/reel/DZCpR1DJ4YH/",
+    "https://www.instagram.com/reel/DY95MYRR79u/",
+    "https://www.instagram.com/reel/DYfBldoS-wW/",
+    "https://www.instagram.com/reel/DYNj4ddJhTU/",
+    "https://www.instagram.com/reel/DR7EL91jYKN/",
+    "https://www.instagram.com/reel/DR7AzOdDchc/",
+    "https://www.instagram.com/reel/DObQye0jXl9/",
+    "https://www.instagram.com/reel/DOHWp_wEkpB/",
+    "https://www.instagram.com/reel/DNtczhwWsQS/",
+    "https://www.instagram.com/reel/DNVzs_Htaih/",
+    "https://www.instagram.com/reel/DNDtuB6M60t/",
+    "https://www.instagram.com/reel/DZavOh9Os0J/",
+    "https://www.instagram.com/reel/DY7frWvBXz0/",
+    "https://www.instagram.com/reel/DY4dw6sNJR5/",
+    "https://www.instagram.com/reel/DYpr-LntqaV/",
+    "https://www.instagram.com/reel/DYXCfSOvSPM/",
+    "https://www.instagram.com/reel/DXhv_lbkoTk/",
+    "https://www.instagram.com/reel/DXg59E9lVSu/",
+    "https://www.instagram.com/reel/DXO3pqBANcw/",
+    "https://www.instagram.com/reel/DXHFqtuFhnj/",
+    "https://www.instagram.com/reel/DW_Z13_D--g/",
+    "https://www.instagram.com/reel/DW1KTp4IHk5/",
+    "https://www.instagram.com/reel/DUIi1AQAHUw/",
+    "https://www.instagram.com/reel/DSU3XatgFNk/",
+    "https://www.instagram.com/reel/DRh7hO2kQc9/",
+    "https://www.instagram.com/reel/DZKxC03hdmF/",
+    "https://www.instagram.com/reel/DZIMcKNRoA_/",
+    "https://www.instagram.com/reel/DZDPof7xKLQ/",
+    "https://www.instagram.com/reel/DY7eVJAx14X/",
+    "https://www.instagram.com/reel/DYjwIKTx9T2/",
+    "https://www.instagram.com/reel/DYIlradRRWe/",
+    "https://www.instagram.com/reel/DXcoReShvii/",
+    "https://www.instagram.com/reel/DXXaclWRFDW/",
+    "https://www.instagram.com/reel/DXPqDvmRGel/",
+    "https://www.instagram.com/reel/DWg3VBNEdMl/",
+    "https://www.instagram.com/reel/DVjCCu2Fkog/",
+    "https://www.instagram.com/reel/DNSrdPkAPU_/",
+    "https://www.instagram.com/reel/DMI-BH1PRr-/",
+    "https://www.instagram.com/p/DZxlJxIRnib/",
+    "https://www.instagram.com/p/DZsblYEuHEv/",
+    "https://www.instagram.com/p/DZGdX6wgFNT/",
+    "https://www.instagram.com/reel/DYUfGu7N-LT/",
+    "https://www.instagram.com/reel/DOHrYSYjHhK/",
+    "https://www.instagram.com/reel/DMMIaK3OmR0/",
+    "https://www.instagram.com/reel/DLldLk4OP3g/",
+    "https://www.instagram.com/reel/DLWBpQ5uanD/",
+    "https://www.instagram.com/reel/DZdFQ2ys23E/",
+    "https://www.instagram.com/reel/DYxfq25pX5v/",
+    "https://www.instagram.com/reel/DYj45hQxBFd/",
+    "https://www.instagram.com/reel/DYjzDaexQma/",
+    "https://www.instagram.com/reel/DYjzDaexQma/",
+    "https://www.instagram.com/reel/DZazf2Yzx-I/",
+    "https://www.instagram.com/reel/DZDreXqBJ5I/",
+    "https://www.instagram.com/reel/DYpfOtLxRAx/",
+    "https://www.instagram.com/reel/DXM7jSGxKl2/",
+    "https://www.instagram.com/reel/DXJ6AmMxwX7/",
+    "https://www.instagram.com/reel/DU810baEW1V/",
+    "https://www.instagram.com/reel/DU4XqR5EYbG/",
+    "https://www.instagram.com/reel/DQxieIgkUhY/",
+    "https://www.instagram.com/reel/DQsJBTCkSgq/",
+    "https://www.instagram.com/reel/DQmn0Y-kXTu/",
+    "https://www.instagram.com/reel/Cv4rta1hihf/",
+    "https://www.instagram.com/reel/CXHBxTKpGEl/",
+    "https://www.instagram.com/reel/CVITvy8jR3P/",
+    "https://www.instagram.com/reel/CSbvp61jORb/",
+    "https://www.instagram.com/reel/CIQZPOApzlg/",
+    "https://www.instagram.com/reel/DX-IKJxRzqi/",
+    "https://www.instagram.com/reel/DX7fGKpySuH/",
+    "https://www.instagram.com/reel/DXuj6MIEcCb/",
+    "https://www.instagram.com/reel/DXKFapeDe5k/",
+    "https://www.instagram.com/reel/DW9EDEgDTtQ/",
+    "https://www.instagram.com/reel/DWzMaNZkU7P/",
+    "https://www.instagram.com/reel/DQw0EdzjZGi/",
+    "https://www.instagram.com/reel/DMdwR_EBnEN/",
+    "https://www.instagram.com/reel/DHn4Sa_M2x9/",
+    "https://www.instagram.com/reel/C9m3nUBMFzL/",
+    "https://www.instagram.com/reel/CzXD3NxLmBS/",
+    "https://www.instagram.com/reel/CzJQ5yKL3u7/",
+    "https://www.instagram.com/reel/CzCdI-eLVzP/",
+    "https://www.instagram.com/reel/DYDQP_ZJ5T5/",
+    "https://www.instagram.com/reel/DYCpiLpOvIb/",
+    "https://www.instagram.com/reel/DX107CSx5So/",
+    "https://www.instagram.com/reel/DURhQvXDkIi/",
+    
+    
+    "https://www.instagram.com/reel/DRcFpRYAN7G/"
+
+]
+
+if __name__ == "__main__":
+    bot = TorInstagramBot(INSTAGRAM_LINKS)
+    bot.run()
